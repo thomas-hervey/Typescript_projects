@@ -14,7 +14,7 @@ export class Summary {
 		public outputTarget: OutputTarget
 	) {}
 
-	buildAndPrintReport(matches: MatchData[]): void {
+	public buildAndPrintReport(matches: MatchData[]): void {
 		const output = this.analyzer.run(matches) // run analysis
 		this.outputTarget.print(output) // print results of analysis
 	}

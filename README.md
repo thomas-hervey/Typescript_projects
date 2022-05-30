@@ -29,3 +29,7 @@ TODO (see types project)
 - Which to use? "is a" relationship (use inheritance) vs "has a " relationship (use composition)
   - "MatchReader is a CsvFileReader"
   - "MatchReader has a reference to CsvFileReader"
+
+## Static classes
+- When we want to call a method on a class without first creating an instance of that class, then calling the method.
+- This is useful because it allows us to pre-configure a declaration within a class. See https://www.udemy.com/course/typescript-the-complete-developers-guide/learn/lecture/15066856#overview for an example
