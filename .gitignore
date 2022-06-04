@@ -1,3 +1,6 @@
 sort/node_modules
 fetchjson/node_modules
 stats/node_modules
+web/node_modules
+web/.parcel-cache
+web/dist

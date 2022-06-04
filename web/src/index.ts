@@ -1,9 +1,5 @@
 import { User } from './models/User'
 
-const user = new User({ name: 'Alex', age: 23 })
+const user = new User({ name: 'new name', age: 0 })
 
-user.on('change', () => {
-  console.log('hi there')
-})
-
-console.log(user)
+user.save()
