@@ -508,30 +508,72 @@ const user = new (0, _user.User)({
     name: "new name",
     age: 0
 });
-user.save();
 
 },{"./models/User":"4rcHn"}],"4rcHn":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "User", ()=>User);
-var _axios = require("axios");
-var _axiosDefault = parcelHelpers.interopDefault(_axios);
+var _eventing = require("./Eventing");
+var _sync = require("./Sync");
+var _attributes = require("./Attributes");
+const rootURL = "http://localhost:3000/users";
 class User {
-    constructor(data){
-        this.data = data;
-        this.// NOTE: create an 'event' property, which is an object that contains
-        // an array of (string) event keys : (callback) values.
-        // We use this syntax when we know we'll have an object, just not what it will be
-        events = {};
+    events = new (0, _eventing.Eventing)();
+    sync = new (0, _sync.Sync)(rootURL);
+    constructor(attrs){
+        this.attributes = new (0, _attributes.Attributes)(attrs);
     }
-    // get UserProps
-    get(propName) {
-        return this.data[propName];
+    // pass-thru methods
+    get on() {
+        return this.events.on;
     }
-    // set UserProps (any props passed in)
-    set(update) {
-        Object.assign(this.data, update);
+    get trigger() {
+        return this.events.trigger;
     }
+    get get() {
+        return this.attributes.get;
+    }
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"1Imi8","./Eventing":"7459s","./Sync":"QO3Gl","./Attributes":"6Bbds"}],"1Imi8":[function(require,module,exports) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
+};
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, "__esModule", {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === "default" || key === "__esModule" || dest.hasOwnProperty(key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
+
+},{}],"7459s":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Eventing", ()=>Eventing);
+class Eventing {
+    // NOTE: create an 'event' property, which is an object that contains
+    // an array of (string) event keys : (callback) values.
+    // We use this syntax when we know we'll have an object, just not what it will be
+    events = {};
     // on any type of event, add to handlers
     on(eventName, callback) {
         const handlers = this.events[eventName] || [];
@@ -546,19 +588,29 @@ class User {
             callback();
         });
     }
-    // fetch a user
-    fetch() {
-        (0, _axiosDefault.default).get(`http://localhost:3000/users/${this.get("id")}`).then((response)=>{
-            this.set(response.data);
-        });
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"1Imi8"}],"QO3Gl":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Sync", ()=>Sync);
+var _axios = require("axios");
+var _axiosDefault = parcelHelpers.interopDefault(_axios);
+class Sync {
+    constructor(rootURL){
+        this.rootURL = rootURL;
     }
-    // persist a user's data
-    save() {
-        const id = this.get("id");
+    // fetch a given thing
+    fetch(id) {
+        return (0, _axiosDefault.default).get(`${this.rootURL}/${id}`);
+    }
+    // persist data for a given thing
+    save(data) {
+        const { id  } = data;
         if (id) // PUT
-        (0, _axiosDefault.default).put(`http://localhost:3000/users/${id}`, this.data);
+        return (0, _axiosDefault.default).put(`${this.rootURL}/${id}`, data);
         else // POST
-        (0, _axiosDefault.default).post(`http://localhost:3000/users`, this.data);
+        return (0, _axiosDefault.default).post(this.rootURL, data);
     }
 }
 
@@ -3917,36 +3969,25 @@ var utils = require("./../utils");
     return utils.isObject(payload) && payload.isAxiosError === true;
 };
 
-},{"./../utils":"5By4s"}],"1Imi8":[function(require,module,exports) {
-exports.interopDefault = function(a) {
-    return a && a.__esModule ? a : {
-        default: a
-    };
-};
-exports.defineInteropFlag = function(a) {
-    Object.defineProperty(a, "__esModule", {
-        value: true
-    });
-};
-exports.exportAll = function(source, dest) {
-    Object.keys(source).forEach(function(key) {
-        if (key === "default" || key === "__esModule" || dest.hasOwnProperty(key)) return;
-        Object.defineProperty(dest, key, {
-            enumerable: true,
-            get: function() {
-                return source[key];
-            }
-        });
-    });
-    return dest;
-};
-exports.export = function(dest, destName, get) {
-    Object.defineProperty(dest, destName, {
-        enumerable: true,
-        get: get
-    });
-};
+},{"./../utils":"5By4s"}],"6Bbds":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Attributes", ()=>Attributes);
+class Attributes {
+    constructor(data){
+        this.data = data;
+    }
+    // set up a generic constraint that type K can be (only one of the keys of T)
+    // then, look at the interface T, return the value at the key K
+    get(key) {
+        return this.data[key];
+    }
+    // set UserProps (any props passed in)
+    set(update) {
+        Object.assign(this.data, update);
+    }
+}
 
-},{}]},["koXk7","h7u1C"], "h7u1C", "parcelRequire94c2")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"1Imi8"}]},["koXk7","h7u1C"], "h7u1C", "parcelRequire94c2")
 
 //# sourceMappingURL=index.b71e74eb.js.map

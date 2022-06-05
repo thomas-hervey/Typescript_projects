@@ -1,74 +1,31 @@
-import axios, { AxiosResponse } from 'axios'
-
+import { Eventing } from './Eventing'
+import { Sync } from './Sync'
+import { Attributes } from './Attributes'
 
 // using `?` means that the property is optional
-interface UserProps {
+export interface UserProps {
   id?: number
   name?: string
   age?: number
 }
 
-type Callback = () => void; // create a type for function that takes no args and returns nothing
+const rootURL = 'http://localhost:3000/users'
 
 export class User {
+  public events: Eventing = new Eventing()
+  public sync: Sync<UserProps> = new Sync<UserProps>(rootURL)
+  public attributes: Attributes<UserProps>
 
-  // NOTE: create an 'event' property, which is an object that contains
-  // an array of (string) event keys : (callback) values.
-  // We use this syntax when we know we'll have an object, just not what it will be
-  events: { [key: string]: Callback[] } = {}
-
-  constructor(private data: UserProps) {
-
+  constructor(attrs: UserProps) {
+    this.attributes = new Attributes<UserProps>(attrs)
   }
 
-  // get UserProps
-  get(propName: string): (number | string) {
-    return this.data[propName]
-  }
+  // pass-thru methods
 
-  // set UserProps (any props passed in)
-  set(update: UserProps): void {
-    Object.assign(this.data, update)
-  }
 
-  // on any type of event, add to handlers
-  on(eventName: string, callback: Callback): void {
-    const handlers = this.events[eventName] || []
-    handlers.push(callback)
-    this.events[eventName] = handlers
-  }
+  get on() { return this.events.on } // return a reference to Eventing.on() method
 
-  // trigger an event
-  trigger(eventName: string): void {
-    const handlers = this.events[eventName]
+  get trigger() { return this.events.trigger }
 
-    if (!handlers || handlers.length === 0) {
-      return
-    }
-
-    handlers.forEach(callback => {
-      callback()
-    })
-  }
-
-  // fetch a user
-  fetch(): void {
-    axios.get(`http://localhost:3000/users/${this.get('id')}`)
-      .then((response: AxiosResponse): void => {
-        this.set(response.data)
-      })
-  }
-
-  // persist a user's data
-  save(): void {
-    const id = this.get('id')
-
-    if (id) {
-      // PUT
-      axios.put(`http://localhost:3000/users/${id}`, this.data)
-    } else {
-      // POST
-      axios.post(`http://localhost:3000/users`, this.data)
-    }
-  }
+  get get() { return this.attributes.get }
 }
