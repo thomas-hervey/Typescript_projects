@@ -5,3 +5,4 @@ web/node_modules
 web/.parcel-cache
 web/dist
 express/server/node_modules
+addresses/node_modules

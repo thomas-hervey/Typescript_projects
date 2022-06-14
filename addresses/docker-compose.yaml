@@ -1,0 +1,10 @@
+services:
+  libpostal_rest:
+    image: fuxingloh/libpostal-rest-docker
+    container_name: libpostal_rest
+    ports:
+      - "3015:8080"
+    restart: on-failure
+
+volumes:
+  data: {}
