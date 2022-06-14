@@ -1,12 +1,14 @@
 import axios from 'axios'
+import { address } from 'faker';
 
 interface libpostalParse {
 	label: string,
 	value: string
 }
 
-interface FullAddress {
-	fullAddress: string
+interface Addresses {
+	fullAddresses: string[],
+	segmentedAddresses: SegmentedAddress[]
 }
 
 interface SegmentedAddress {
@@ -50,16 +52,22 @@ export async function runLibpostalParser(text: string): Promise<libpostalParse[]
 }
 
 
-const formatAddresses = (matches: libpostalParse[]): SegmentedAddress[] | undefined => {
+const formatAddresses = (matches: libpostalParse[]): Addresses | undefined => {
 
-	let addresses:SegmentedAddress[] = []
+	let segmentedAddresses:SegmentedAddress[] = []
+	let fullAddresses: string[] = []
 
   try {
     // make sure that the response contains a parse array with 1+ values
     if (matches && Array.isArray(matches) && matches.length >= 1) {
 
       // if there is only a "house", return nothing
-      if (matches.length === 1 && matches[0].label === 'house') return addresses
+      if (matches.length === 1 && matches[0].label === 'house') {
+				return {
+					fullAddresses,
+					segmentedAddresses
+				}
+			}
 
 			// set holders
       let currAddress: SegmentedAddress = {}
@@ -71,7 +79,7 @@ const formatAddresses = (matches: libpostalParse[]): SegmentedAddress[] | undefi
 
         // if the label already exists, save it off as a new address
         if (label in currAddress) {
-          addresses.push(currAddress)
+          segmentedAddresses.push(currAddress)
 
           // reset the current address
           currAddress = {}
@@ -83,18 +91,31 @@ const formatAddresses = (matches: libpostalParse[]): SegmentedAddress[] | undefi
 
         // if this is the last label, add it to the addresses
         if (index + 1 === matches.length) {
-          addresses.push(currAddress)
+          segmentedAddresses.push(currAddress)
         }
 
       })
 
-			// TODO: add full addresses
+			// compress segmented addresses into a full address
+			function compressFullAddresses(addresses: SegmentedAddress[]): string[] {
 
-			return addresses
+				let fullAddresses: string[] = []
+
+				fullAddresses = addresses.map((address: SegmentedAddress): string => {
+					return Object.values(address).join(' ')
+				})
+
+				return fullAddresses
+			}
+
+			fullAddresses = compressFullAddresses(segmentedAddresses)
+
+			return {
+				fullAddresses,
+				segmentedAddresses
+			}
 
     }
-
-		return addresses
 
   } catch (error) {
     console.log(`Error in formatAddresses(): ${error}`)
@@ -119,18 +140,6 @@ class Addressing {
 		if (id) { return this.segmentedAddresses[id] }
 		return this.segmentedAddresses
 	}
-
-	private addFullAddresses(text: string): void {
-
-
-		this.fullAddresses.push('hi there')
-	}
-
-	private addSegmentedAddresses(text: string): void {
-		this.fullAddresses.push('hi there')
-	}
-
-
 }
 
 
