@@ -29,6 +29,10 @@ class ArrayOfAnything<T> {
 new ArrayOfAnything<string>(['a', 'b', 'c'])
 new ArrayOfAnything(['a', 'b', 'c'])
 
+const example = new ArrayOfAnything(['a', 'b', 'c'])
+example.get(1)
+
+
 
 
 // GENERIC FUNCTIONS
